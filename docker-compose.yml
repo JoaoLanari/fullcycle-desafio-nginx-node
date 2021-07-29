@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+  db:
+    container_name: db_container
+    image: mariadb:10.5.8
+    command: --innodb-use-native-aio=0
+    restart: always
+    tty: true
+    volumes: 
+      - ./mysql:/var/lib/mysql
+      - ./database:/docker-entrypoint-initdb.d
+    environment: 
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=root
+    networks: 
+      - db-network
+  
+  app:
+    container_name: app_container
+    build:
+      context: ./node
+    entrypoint: dockerize -wait tcp://db:3306 -timeout 20s
+    command: npm start
+    networks:
+      - db-network
+      - proxy-network
+    volumes:
+      - ./node:/usr/src/app
+      - /usr/src/app/node_modules
+    tty: true
+    depends_on:
+      - db
+  
+  proxy:
+    container_name: proxy_container
+    build:
+      context: ./nginx 
+    ports: 
+      - 8080:80
+    restart: on-failure
+    entrypoint: dockerize -wait tcp://app:3000 -timeout 20s
+    command: /docker-entrypoint.sh nginx -g 'daemon off;'
+    depends_on:
+      - app    
+    networks:
+      - proxy-network
+
+networks: 
+  db-network:
+    driver: bridge
+  proxy-network:
+    driver: bridge
