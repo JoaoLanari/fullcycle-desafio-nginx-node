@@ -1,4 +1,4 @@
-REATE DATABASE desafio2;
+CREATE DATABASE desafio2;
 USE desafio2;
 
 CREATE TABLE people(

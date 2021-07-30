@@ -12,5 +12,3 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
 COPY . .
 
 RUN npm install
-
-CMD [ "tail", "-f", "/dev/null" ]

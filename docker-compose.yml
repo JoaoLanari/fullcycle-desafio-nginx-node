@@ -10,7 +10,7 @@ services:
     volumes: 
       - ./mysql:/var/lib/mysql
       - ./database:/docker-entrypoint-initdb.d
-    environment: 
+    environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_USER=root
     networks: 
@@ -19,27 +19,23 @@ services:
   app:
     container_name: app_container
     build:
-      context: ./node
-    entrypoint: dockerize -wait tcp://db:3306 -timeout 20s
+      context: node
+    entrypoint: dockerize -wait tcp://db:3306 -timeout 60s
     command: npm start
     networks:
       - db-network
       - proxy-network
-    volumes:
-      - ./node:/usr/src/app
-      - /usr/src/app/node_modules
-    tty: true
     depends_on:
       - db
   
   proxy:
     container_name: proxy_container
     build:
-      context: ./nginx 
+      context: nginx 
     ports: 
       - 8080:80
     restart: on-failure
-    entrypoint: dockerize -wait tcp://app:3000 -timeout 20s
+    entrypoint: dockerize -wait tcp://app:3000 -timeout 60s
     command: /docker-entrypoint.sh nginx -g 'daemon off;'
     depends_on:
       - app    
